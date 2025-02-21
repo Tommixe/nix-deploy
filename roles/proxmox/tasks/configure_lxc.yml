@@ -1,0 +1,128 @@
+#https://github.com/andrewzah/service-automation/blob/master/ansible/roles/z_proxmox/tasks/configure_101_lxc.yml
+#https://github.com/iraqez/devops/blob/a3cb296eedbd30554f2d1e0969ba995e515098bf/ansible/roles/replaceXlcMount/tasks/main.yml#L4
+---
+
+# fails if doesn't exist
+- name: STOP LXC
+  become: 'yes'
+  ignore_errors: 'yes'
+  community.general.proxmox:
+    vmid: '{{ vmid }}'
+    node: '{{ pm_node_name }} '
+    api_user: '{{ pm_user }}'
+    api_password: '{{pm_password}}'
+    api_host: '{{ pm_host }}'
+    state: 'stopped'
+    force: true
+
+- name: REMOVE LXC
+  become: 'yes'
+  ignore_errors: 'yes'
+  community.general.proxmox:
+    vmid: '{{ vmid }}'
+    node: '{{ pm_node_name }} '
+    api_user: '{{ pm_user }}'
+    api_password: '{{ pm_password }}'
+    api_host: '{{ pm_host }}'
+    state: 'absent'
+    force: true
+
+- name: CREATE LXC
+  community.general.proxmox:
+    force: true
+    api_user: '{{ pm_user }}'
+    api_password: '{{ pm_password }}'
+    api_host: '{{ pm_host }}'
+    cores: 2
+    disk: 'local-thin:16'
+    storage: 'local-thin'
+    hostname: 'lxc00'
+    memory: '2048'
+    netif: '{"net0":"name=eth0,ip=dhcp,ip6=dhcp,bridge=vmbr0"}'
+    node: '{{pm_node_name}}'  
+    onboot: false
+    ostemplate: '{{ ostemplate }}'
+    #password: '{{ pass_root_takanaka }}'
+    pubkey: "{{hostvars['localhost']['nixinstallkey']}}"
+    state: present
+    unprivileged: true
+    vmid: '{{ vmid }}'
+    #timeout: 600
+    features:
+      - 'nesting=1'
+      - 'fuse=1'
+      - 'keyctl=1'
+    mounts:
+      mp0: "/mnt/hd1/data,mp=/data"
+      
+- name: check if /etc/pve/lxc/vmid.conf exists
+  ansible.builtin.stat:
+    path: '/etc/pve/lxc/{{ vmid }}.conf'
+  register: conf101
+
+- name: add mount mappings
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    dest: '/etc/pve/lxc/{{ vmid }}.conf'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    state: 'present'
+  with_items:
+    - regexp: '^lxc.idmap: u 0 100000 33$'
+      line: 'lxc.idmap: u 0 100000 33'
+    - regexp: '^lxc.idmap: g 0 100000 33$'
+      line: 'lxc.idmap: g 0 100000 33'
+    - regexp: '^lxc.idmap: u 33 33 1$'
+      line: 'lxc.idmap: u 33 33 1'
+    - regexp: '^lxc.idmap: g 33 33 1$'
+      line: 'lxc.idmap: g 33 33 1'
+    - regexp: '^lxc.idmap: u 34 100034 966$'
+      line: 'lxc.idmap: u 34 100034 966'
+    - regexp: '^lxc.idmap: g 34 100034 966$'
+      line: 'lxc.idmap: g 34 100034 966'      
+    - regexp: '^lxc.idmap: u 1000 1000 1$'
+      line: 'lxc.idmap: u 1000 1000 1'
+    - regexp: '^lxc.idmap: g 1000 1000 1$'
+      line: 'lxc.idmap: g 1000 1000 1'
+    - regexp: '^lxc.idmap: u 1001 101001 64535$'
+      line: 'lxc.idmap: u 1001 101001 64535'
+    - regexp: '^lxc.idmap: g 1001 101001 64535$'
+      line: 'lxc.idmap: g 1001 101001 64535'
+    - regexp: '^lxc.cgroup2.devices.allow: c 10:200 rwm$'
+      line: 'lxc.cgroup2.devices.allow: c 10:200 rwm'
+    - regexp: '^lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file$'
+      line: 'lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file'
+
+- name: edit /etc/subuid
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    dest: '/etc/subuid'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    state: 'present'
+  with_items:
+    - regexp: '^root:1000:1$'
+      line: 'root:1000:1'
+    - regexp: '^root:33:1$'
+      line: 'root:33:1'
+    - regexp: '^tommaso:165536:65536$'
+      line: 'tommaso:165536:65536'
+    - regexp: '^root:100000:65536$'
+      line: 'root:100000:65536'
+
+- name: edit /etc/subgid
+  become: 'yes'
+  ansible.builtin.lineinfile:
+    dest: '/etc/subgid'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    state: 'present'
+  with_items:
+    - regexp: '^root:1000:1$'
+      line: 'root:1000:1'
+    - regexp: '^root:33:1$'
+      line: 'root:33:1'
+    - regexp: '^tommaso:165536:65536$'
+      line: 'tommaso:165536:65536'
+    - regexp: '^root:100000:65536$'
+      line: 'root:100000:65536'

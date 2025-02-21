@@ -1,0 +1,57 @@
+---
+
+- name: ensure enterprise apt list is not present
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/pve-enterprise.list
+    state: absent
+
+- name: Only run "update_cache=yes" if the last one is more than 3600 seconds ago
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: do an apt update
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/pve-enterprise.list
+    state: absent
+
+- name: Remove dependencies that are no longer required
+  ansible.builtin.apt:
+    autoremove: yes
+
+- name: ensure packages are installed
+  ansible.builtin.apt:
+    name:
+      - 'python3'
+      - 'python3-pip'
+      - 'python3-proxmoxer'
+      - 'python3-requests'
+    state: 'latest'
+    update_cache: 'yes'
+  when: ansible_distribution == "Debian"
+
+##################
+### LXC ###
+##################
+
+- name: configure lxc
+  ansible.builtin.include_tasks: configure_lxc.yml
+
+
+###################
+### START LXCs ###
+###################
+
+- name: ensure LXC is started
+  community.general.proxmox:
+    node: '{{pm_node_name}}' 
+    api_user: '{{ pm_user }}'
+    api_password: '{{ pm_password }}'
+    api_host: '{{ pm_host }}'
+    vmid:  '{{ vmid }}'
+    state: 'started'
+
+
+- name: sleep for 5 seconds
+  ansible.builtin.wait_for:
+    timeout: 5

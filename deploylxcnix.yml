@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: keygen
+
+- hosts: proxmox
+  vars_prompt:
+    - name: pm_password
+      prompt: Proxmox sudo password
+      private: true
+  become: true
+  roles:
+    - role: downloadnix
+    - role: proxmox

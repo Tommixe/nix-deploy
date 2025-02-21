@@ -1,0 +1,8 @@
+- name: Generate an Ed25519 keypair
+  community.crypto.openssh_keypair:
+    type: "ed25519"
+    path: ~/.ssh/nixinstall
+    state: present
+  register: generated_key
+
+- set_fact: nixinstallkey={{ generated_key.public_key }}

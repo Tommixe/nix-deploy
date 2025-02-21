@@ -1,0 +1,15 @@
+all:
+  vars:
+    vmid: 120
+    pm_host: "{{ sops.pm_host }}"
+    pm_node_name: "{{ sops.pm_node_name}}"
+    pm_user: "{{ sops.pm_user }}"
+    ostemplate: hd1:vztmpl/nixos-system-x86_64-linux.tar.xz
+    imageurl: https://hydra.nixos.org/build/289736627/download/1/nixos-system-x86_64-linux.tar.xz
+    imagechecksum: sha256:ba91233e2f741c7312b773b069876792dcbe4a6cfa28697b0f1a9d2250246586
+    nixospubkey: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAIXJn+DTfyB0+7JkHbNHVPywAQxHe6+cnxhhA4zF2rD
+    sops: "{{ lookup('community.sops.sops', 'secrets.yaml') | ansible.builtin.from_yaml }}"
+  hosts:
+   proxmox:
+      ansible_host: "{{ sops.pm_host }}"
+      ansible_user: root

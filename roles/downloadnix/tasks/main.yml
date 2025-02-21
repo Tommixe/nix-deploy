@@ -1,0 +1,10 @@
+---
+
+- name: Download nixos lxc image
+  get_url:
+    url: '{{ imageurl }}'
+    checksum: '{{ imagechecksum }}'
+    dest: /mnt/hd1/template/cache/nixos-system-x86_64-linux.tar.xz
+    owner: root
+    group: root
+    mode: 0755 
