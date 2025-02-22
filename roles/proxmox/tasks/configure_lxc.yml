@@ -33,27 +33,25 @@
     api_user: '{{ pm_user }}'
     api_password: '{{ pm_password }}'
     api_host: '{{ pm_host }}'
-    cores: 2
-    disk: 'local-thin:16'
-    storage: 'local-thin'
-    hostname: 'lxc00'
-    memory: '2048'
+    cores: '{{ cores }}'
+    disk: '{{ disk }}'
+    storage: '{{ storage }}'
+    hostname: '{{ hostname }}'
+    memory: '{{ memory }}'
     netif: '{"net0":"name=eth0,ip=dhcp,ip6=dhcp,bridge=vmbr0"}'
     node: '{{pm_node_name}}'  
     onboot: false
     ostemplate: '{{ ostemplate }}'
-    #password: '{{ pass_root_takanaka }}'
     pubkey: "{{hostvars['localhost']['nixinstallkey']}}"
     state: present
     unprivileged: true
     vmid: '{{ vmid }}'
-    #timeout: 600
     features:
       - 'nesting=1'
       - 'fuse=1'
       - 'keyctl=1'
     mounts:
-      mp0: "/mnt/hd1/data,mp=/data"
+      mp0: "{{ mounts_mp0}}"
       
 - name: check if /etc/pve/lxc/vmid.conf exists
   ansible.builtin.stat:
