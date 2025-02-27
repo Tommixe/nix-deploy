@@ -1,9 +1,9 @@
 ## What you can do
-The scope of this ansible playbook is to deploy a NixOS LXC containar on a proxmox node.
+The scope of this ansible playbook is to deploy a NixOS LXC container on a proxmox node.
 The playbook will:
 1. download a container image from hydra.nixos.org
 2. Generate a ssh keypair that you can use to access the new container
-3. Install the required packeges in the proxmox host to run ansible
+3. Install the required packages in the proxmox host to run ansible
 4. Create a new unprivileged lxc container (it will delete a previous created one with the same id, if present)
 5. Upload the ssh public key generated at step 2
 6. Bind mount an host folder inside the container
