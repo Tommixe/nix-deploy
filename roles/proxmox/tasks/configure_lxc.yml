@@ -35,7 +35,7 @@
     api_host: '{{ pm_host }}'
     cores: '{{ cores }}'
     disk: '{{ disk }}'
-    storage: '{{ storage }}'
+    #storage: '{{ storage }}'
     hostname: '{{ hostname }}'
     memory: '{{ memory }}'
     netif: '{"net0":"name=eth0,ip=dhcp,ip6=dhcp,bridge=vmbr0"}'
